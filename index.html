@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="./styleMeme.css" />
+
+    <link
+      href="https://fonts.googleapis.com/css?family=VT323&display=swap"
+      rel="stylesheet"
+    />
+    <title>Meme Generator</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@16.0.0-rc.3/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@16.0.0-rc.3/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/prop-types@15.6.0/prop-types.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.26.0/babel.js"></script>
+    <script type="text/babel">
+      class MemeApp extends React.Component {
+        constructor() {
+          super();
+          this.state = {};
+        }
+        render() {
+          return (
+            <div>
+              <Header />
+              <MemeGenerator />
+            </div>
+          );
+        }
+      }
+
+      function Header() {
+        return (
+          <header>
+            <img
+              src="http://www.pngall.com/wp-content/uploads/2016/05/Trollface.png"
+              alt="Problem?"
+            ></img>
+            <p>Meme Generator</p>
+          </header>
+        );
+      }
+      class MemeGenerator extends React.Component {
+        constructor() {
+          super();
+          this.state = {
+            topText: "",
+            bottomText: "",
+            rndmImg: "http://i.imgflip.com/1bij.jpg",
+            allMemeImgs: []
+          };
+          this.handleChange = this.handleChange.bind(this);
+          this.handleSubmit = this.handleSubmit.bind(this);
+        }
+
+        componentDidMount() {
+          fetch("https://api.imgflip.com/get_memes")
+            .then(response => response.json())
+            .then(response => {
+              const { memes } = response.data;
+
+              this.setState({ allMemeImgs: memes });
+            });
+        }
+
+        handleChange(event) {
+          const { name, value } = event.target;
+          this.setState({ [name]: value });
+        }
+
+        handleSubmit(event) {
+          event.preventDefault();
+          this.setState(prevState => {
+            let index = Math.floor(
+              Math.random() * this.state.allMemeImgs.length
+            );
+
+            let newImg = this.state.allMemeImgs[index].url;
+            console.log(newImg);
+            return { rndmImg: [newImg] };
+          });
+        }
+
+        render() {
+          return (
+            <div>
+              <form className="meme-form" onSubmit={this.handleSubmit}>
+                <input
+                  type="text"
+                  value={this.state.topText}
+                  name="topText"
+                  placeholder="Text on the top"
+                  onChange={this.handleChange}
+                ></input>
+
+                <input
+                  type="text"
+                  value={this.state.bottomText}
+                  name="bottomText"
+                  placeholder="Text on the bottom"
+                  onChange={this.handleChange}
+                ></input>
+                <button>Generate!</button>
+              </form>
+              <div className="meme">
+                <img src={this.state.rndmImg} alt=""></img>
+                <h2 className="top">{this.state.topText}</h2>
+                <h2 className="bottom">{this.state.bottomText}</h2>
+              </div>
+            </div>
+          );
+        }
+      }
+
+      ReactDOM.render(<MemeApp />, document.getElementById("root"));
+    </script>
+  </body>
+</html>
